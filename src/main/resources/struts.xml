@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+
+<struts>
+
+	<!-- <result-types> -->
+	<!-- <result-type name="json" class="org.apache.struts2.json.JSONResult" 
+		/> -->
+	<!-- </result-types> json-default -->
+
+	<!-- <constant name="struts.objectFactory" value="spring"></constant> -->
+	<!-- <constant name="struts.enable.DynamicMethodInvocation" value="true" 
+		/> -->
+
+	<!-- 第1步：先定义一个包 -->
+	<package name="default" namespace="/" extends="json-default">
+		<global-allowed-methods>regex:.*</global-allowed-methods>
+		<action name="test" method="login"
+			class="com.szy.test.login.action.LoginAction">
+		</action>
+		<!-- *-*为通配符，下标1表示：Action名称 ，下标1表示：方法名称 -->
+		<action name="*_*" method="{2}" class="com.szy.test.login.action.{1}Action">
+			<result name="list">/jsp/{1}/{2}List.jsp</result>
+			<result name="form">/jsp/{1}/{2}Form.jsp</result>
+			<result name="backInput">${targetUrl}</result>
+			<result name="success">/index.jsp</result>
+			<result name="error">/login.jsp</result>
+			<result name="actionOk">/common/actionOK.jsp</result>
+			<result name="actionError">/common/actionError.jsp</result>
+			<result name="print">/common/print.jsp</result>
+			<result name="extend">${targetUrl}</result>
+			<result name="json" type="json">
+				<param name="enableGZIP">false</param>
+				<param name="root">webMap</param>
+			</result>
+			<result name="redirect" type="redirect">
+				<param name="location">${targetUrl}</param>
+			</result>
+
+
+
+			<result name="downFile" type="stream">
+				<param name="contentType">
+					application/octet-stream
+				</param>
+				<param name="inputName">inputStream</param>
+				<param name="contentDisposition">
+					attachment;filename="${fileName}"
+				</param>
+				<param name="bufferSize">4096</param>
+			</result>
+
+			<result name="randStream" type="stream">
+				<param name="contentType">image/gif</param>
+				<param name="inputName">inputStream</param>
+			</result>
+		</action>
+
+	</package>
+</struts>
