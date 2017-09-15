@@ -11,9 +11,14 @@
  */
 package com.szy.test.login.action;
 
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 import com.szy.test.login.entity.User;
 import com.szy.test.login.service.UserService;
@@ -29,7 +34,26 @@ public class LoginAction extends ActionSupport {
 	private String targetUrl;
 	private String name;
 	private String pass;
+	private String code;
+	private String isIdentify;
+	private String message;
 	
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
 	public User getUser() {
 		return user;
 	}
@@ -70,9 +94,26 @@ public class LoginAction extends ActionSupport {
 	public String login() throws Exception {
 		// http://localhost:8080/test-login/Login_login.action
 		
+		//判断是否输入完全
+		if(name.equals("")||pass.equals("")||code.equals("")){
+			message ="请输入完整！！！";
+			return ERROR;
+		}
+		//判断验证码是否通过
+		else{
+			checkValidCode();
+			if(isIdentify.equals("no")) {
+				message="验证码输入错误！！！";
+				return ERROR; 
+			}
+		}
+		//通过之后判断用户名与密码的匹配
 		user = userService.login(name, pass);
 		if(user!=null) return SUCCESS;
-		else return ERROR;
+		else {
+			message ="用户名或密码错误！！！";
+			return ERROR;
+		}
 		//System.out.println("姓名："+user.getName());
 	//	System.out.println("name:"+name);
 	//	System.out.println("login");
@@ -80,5 +121,30 @@ public class LoginAction extends ActionSupport {
 	//	return "redirect";
 		
 	}
+	
+	
+	//检测验证码
+		public void checkValidCode(){
+			HttpServletResponse response = null;
+			try{
+				System.out.println("页面输入框传过来的code:"+code);
+				ActionContext actionContext = ActionContext.getContext();
+				Map session =actionContext.getSession();
+				String validateCode=(String)session.get("imageCode");
+				response = (HttpServletResponse)  
+						ActionContext.getContext().get(org.apache.struts2.StrutsStatics.HTTP_RESPONSE);  
+				System.out.println("系统生成的code:"+validateCode);
+				//如果输入的跟生成的验证码相同，则通过
+				if(code.equalsIgnoreCase(validateCode)){
+					isIdentify="ok";
+					System.out.println("是否通过 ："+isIdentify);
+		 		}else{
+		 			isIdentify="no";
+					System.out.println("是否通过 ："+isIdentify);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 
 }
