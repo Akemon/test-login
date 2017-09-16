@@ -22,6 +22,7 @@ import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 import com.szy.test.login.entity.User;
 import com.szy.test.login.service.UserService;
+import com.szy.test.login.util.MD5;
 
 /**
  * @ClassName: LoginAction
@@ -64,8 +65,14 @@ public class LoginAction extends ActionSupport {
 
 	private User user;
 	
+	//用户service类
 	@Autowired
 	UserService userService;
+	
+	
+	//md5工具类
+	@Autowired
+	MD5 md5;
 	
 	public String getName() {
 		return name;
@@ -103,15 +110,20 @@ public class LoginAction extends ActionSupport {
 		else{
 			checkValidCode();
 			if(isIdentify.equals("no")) {
+				name="";
+				pass="";
 				message="验证码输入错误！！！";
 				return ERROR; 
 			}
 		}
 		//通过之后判断用户名与密码的匹配
+		pass =md5.getMD5ofStr(name+pass);
 		user = userService.login(name, pass);
 		if(user!=null) return SUCCESS;
 		else {
 			message ="用户名或密码错误！！！";
+			name="";
+			pass="";
 			return ERROR;
 		}
 		//System.out.println("姓名："+user.getName());
